@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(45deg, #f3e5f5, #e8eaf6, #e3f2fd);
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #b39ddb, #90caf9);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background 0.5s ease;
+            border-radius: 0 0 20px 20px;
+            margin: 0 15px;
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+            font-size: 1.2rem;
+            transition: color 0.5s ease;
+        }
+        .navbar-brand:hover, .nav-link:hover {
+            color: #f3e5f5 !important;
+        }
+        .container {
+            margin-top: 40px;
+            animation: fadeInUp 1.5s ease-in-out;
+        }
+        .card {
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+        }
+        h3 {
+            color: #5e35b1;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .input-group {
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            background-color: #7e57c2;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #5e35b1;
+        }
+        .list-group-item {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .list-group-item:hover {
+            background-color: #e8eaf6;
+            transform: scale(1.05);
+        }
+        .form-check-input {
+            accent-color: #7e57c2;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .todo-item {
+            animation: bounceIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Todo App <i class="fas fa-tasks"></i></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Todo List</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">LogOut <i class="fas fa-sign-out-alt"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <div class="card shadow-lg p-4 mb-5 bg-white rounded">
+            <div class="card-body text-center">
+                <h3>Select User:</h3>
+                <div class="input-group">
+                    <input type="number" id="userIdInput" class="form-control" placeholder="Enter User ID (1-10)" aria-label="User ID" aria-describedby="basic-addon2">
+                    <button class="btn btn-primary" type="button" onclick="getTodos()">Get Todos <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="card shadow-lg p-4 mb-5 bg-white rounded">
+            <div class="card-body">
+                <h3 class="text-center">Todo List</h3>
+                <ul class="list-group" id="todoList">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let completedCount = 0;
+        document.getElementById('userIdInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            getTodos();
+        }
+    });
+        function getTodos() {
+            const userId = document.getElementById('userIdInput').value;
+            if (!userId) {
+                alert('Please enter a User ID.');
+                return;
+            }
+
+            fetch(`https://jsonplaceholder.typicode.com/todos?userId=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayTodos(data);
+                })
+                .catch(error => console.log('Error fetching todos:', error));
+        }
+        function displayTodos(todos) {
+            const todoList = document.getElementById('todoList');
+            todoList.innerHTML = '';
+
+            todos.forEach(todo => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'todo-item');
+                listItem.innerHTML = `
+                    <span>${todo.title}</span>
+                    <input type="checkbox" class="form-check-input" ${todo.completed ? 'checked disabled' : ''} onchange="markCompleted(this)">
+                `;
+                todoList.appendChild(listItem);
+            });
+        }
+        function markCompleted(checkbox) {
+            if (checkbox.checked) {
+                completedCount++;
+            } else {
+                completedCount--;
+            }
+
+            validateCompletedTasks()
+                .then(message => {
+                    alert(message); 
+                })
+                .catch(() => {});
+        }
+
+        function validateCompletedTasks() {
+            return new Promise((resolve, reject) => {
+                if (completedCount === 5) {
+                    resolve('Congrats. 5 Tasks have been Successfully Completed');
+                } else {
+                    reject();
+                }
+            });
+        }
+
+        function logout() {
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+</html>
